@@ -17,7 +17,7 @@ Handles parsing a single String input value into typed data.
 
 ## PoC Design Analysis
 
-### Individual Review (Argument Lead)
+### Individual Review (Argument Lead) Tony Luo
 
 Good decisions:
 
@@ -32,6 +32,13 @@ Less-good decisions:
 -The sub-bug workaround seems a bit flimsy. A check for a lead “-” and a “.” is not elegant and doesn’t utilize data types to our advantage. 
 
 
-### Individual Review (Command Lead)
+### Individual Review (Command Lead) MOHAMMED ALI
+Good decisions:
+- Separating 'Argument<T>' from 'Command' made the system modular and reusable.
+- Introducing 'CommandResult' improved usability by avoiding repeated casting from 'Map<String, Object>'.
+
+Bad decisions:
+- The initial design treated all named arguments as required, which made it harder later to support flags.
+- Subcommand support was not planned early, so adding it required modifying the 'Command' structure.
 
 ### Team Review
