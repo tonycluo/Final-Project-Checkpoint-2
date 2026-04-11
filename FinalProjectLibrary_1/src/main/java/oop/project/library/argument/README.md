@@ -42,3 +42,6 @@ Bad decisions:
 - Subcommand support was not planned early, so adding it required modifying the 'Command' structure.
 
 ### Team Review
+There was uncertainty about how much logic should be placed in 'CommandScenarios' versus the reusable 'Command' system.
+Subcommands introduced additional complexity in parsing structure.
+Improvements for future work: cleaner API for optional arguments, more specific error handling, support for more complex argument types.
