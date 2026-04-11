@@ -12,7 +12,7 @@ Handles creation of creation command structures and multi-argument parsing.
 
 ## PoC Design Analysis
 
-### Individual Review (Command Lead) MOHAMMED ALI
+### Individual Review (Command Lead) Mohammed Ali
 Good decisions:
 - Separating 'Argument<T>' from 'Command' made the system modular and reusable.
 - Introducing 'CommandResult' improved usability by avoiding repeated casting from 'Map<String, Object>'.
@@ -21,8 +21,16 @@ Bad decisions:
 - The initial design treated all named arguments as required, which made it harder later to support flags.
 - Subcommand support was not planned early, so adding it required modifying the 'Command' structure.
 
-### Individual Review (Argument Lead)
-- Added basic Argument class skeleton for CommandArgument.java.
+### Individual Review (Argument Lead) Tony Luo
+-Reused Input.parseBasicArgs() to tokenize inputs, which distinctly separates each scenario, keeping their functionality to validation and type conversion.
+
+-Implemented the helper functions parseInteger and parseSubDouble due to their potential reusability in future scenarios.
+
+Less-good decisions:
+
+-Errors are thrown as plain RuntimeExceptions, which makes it hard for users to identify the exact error in the inputs.
+
+-The sub-bug workaround seems a bit flimsy. A check for a lead “-” and a “.” is not elegant and doesn’t utilize data types to our advantage.
 
 ### Team Review
 - There was uncertainty about how much logic should be placed in 'CommandScenarios' versus the reusable 'Command' system.
