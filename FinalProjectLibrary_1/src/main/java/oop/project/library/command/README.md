@@ -20,26 +20,45 @@
 
 ---
 
-## PoC Design Review (Revisited)
+## Individual Review (Command System)
 
-### Individual Review
+### Good Design Decisions
 
-**Good decisions:**
-- The original separation between `Argument<T>` and `Command` made it easier to extend functionality without rewriting the system.
-- Using `CommandResult` simplified access to parsed values and reduced casting errors.
+- The separation between `Argument<T>` and `Command` allowed the system to be extended (e.g., flags, defaults, subcommands) without rewriting core parsing logic. This modular design improves maintainability and extensibility.
+- The use of `CommandResult` for typed value extraction avoids unsafe casting and enforces correct usage of parsed values, improving reliability and developer experience.
 
-**Less-good decisions:**
-- Initial design assumed all arguments were required, making it harder to later introduce optional/default arguments.
-- Alias and flag behavior were not considered early, requiring additional logic to be added to `CommandArgument`.
+### Less-Good Design Decisions
+
+- The original design assumed all arguments were required, which made introducing optional/default arguments more complex and required modifying existing parsing logic rather than extending it cleanly.
+- The decision to build commands incrementally using `addPositionalArgument` and `addNamedArgument` increases the risk of invalid intermediate states (e.g., duplicate names), suggesting that a more constrained or immutable construction approach could improve safety.
 
 ---
 
-### Team Review
+## Individual Review (Argument System)
 
-- The extension to support flags and aliases required changes to both `Command` and `CommandArgument`, indicating tighter coupling than initially expected.
-- Handling implicit values (flags with no value) introduced ambiguity that required careful design decisions.
-- Subcommand support (`dispatch`) required modifying parsing flow to treat the first positional argument differently.
-- There is still some duplication between scenario logic and command parsing, which could be improved with deeper integration.
+### Good Design Decision
+
+- The Argument system uses a polymorphic abstraction (`Argument<T>`) instead of hardcoding specific types, allowing flexible support for different data types (e.g., integers, booleans, enums) without modifying existing logic.
+
+### Less-Good Design Decision
+
+- Validation logic is tightly coupled with parsing logic within the same abstraction, which reduces flexibility. Separating validation into a distinct layer could improve reuse and composability (e.g., applying the same validation across different argument types).
+
+---
+
+## Team Review
+
+### Design Disagreement
+
+- There is disagreement on whether default values and flag behavior should be handled within the Argument system or the Command system.
+    - One approach keeps the Argument system simple and places defaults in Command.
+    - Another approach integrates defaults into Argument for consistency across use cases.
+- Each approach has tradeoffs in simplicity versus consistency.
+
+### Design Concern
+
+- Subcommand support (e.g., `dispatch static 1`) introduces additional complexity into the Command system by requiring special handling of positional arguments.
+- It is unclear whether subcommands should be part of the core Command abstraction or handled by a separate dispatcher layer, and there is no clear best solution at this stage.
 
 ---
 
@@ -72,18 +91,18 @@
 ### Argument System → Command System
 
 - The Argument system provides a reusable abstraction for parsing values.
-- This allowed the Command system to focus only on structure and flow.
-- Validation logic (type checking, boolean parsing, etc.) is cleanly encapsulated.
+- This allows the Command system to focus on structure and flow rather than type conversion.
+- Validation logic (type checking, boolean parsing, etc.) is cleanly encapsulated within Argument abstractions.
 
 ### Command System → Argument System
 
 - The Command system extends the Argument system by adding:
-    - structure (positional vs named)
+    - structure (positional vs named arguments)
     - control flow (subcommands)
     - usability features (defaults, flags, aliases)
-- Some improvements could be made:
+- Potential improvements:
     - support for richer validation (ranges, choices) directly in Argument classes
-    - better error typing instead of generic RuntimeExceptions
+    - improved error typing instead of relying on generic RuntimeExceptions
 
 ---
 
@@ -94,7 +113,7 @@
     - regex-based validation integrated into Argument classes
 - Improve API ergonomics:
     - reduce boilerplate when defining commands
-    - introduce builder-style command creation
+    - introduce builder-style or immutable command creation patterns
 - Improve error handling:
     - use custom exception types instead of RuntimeException
 - Reduce duplication between scenarios and command definitions
