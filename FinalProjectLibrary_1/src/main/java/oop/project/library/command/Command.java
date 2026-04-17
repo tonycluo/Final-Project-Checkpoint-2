@@ -17,7 +17,6 @@ public final class Command {
 
     public Command(String name) {
         this.name = Objects.requireNonNull(name, "name");
-
         if (name.isBlank()) {
             throw new IllegalArgumentException("Command name cannot be blank.");
         }
@@ -33,7 +32,6 @@ public final class Command {
 
     public Command addPositionalArgument(CommandArgument<?> argument) {
         Objects.requireNonNull(argument, "argument");
-
         if (!argument.isPositional()) {
             throw new IllegalArgumentException("Expected a positional argument.");
         }
@@ -45,7 +43,6 @@ public final class Command {
 
     public Command addNamedArgument(CommandArgument<?> argument) {
         Objects.requireNonNull(argument, "argument");
-
         if (!argument.isNamed()) {
             throw new IllegalArgumentException("Expected a named argument.");
         }
@@ -71,14 +68,6 @@ public final class Command {
         return this;
     }
 
-    public List<CommandArgument<?>> getPositionalArguments() {
-        return List.copyOf(positionalArguments);
-    }
-
-    public List<CommandArgument<?>> getNamedArguments() {
-        return List.copyOf(namedArguments);
-    }
-
     public CommandResult parse(BasicArgs input) {
         Objects.requireNonNull(input, "input");
 
@@ -101,8 +90,7 @@ public final class Command {
             CommandArgument<?> argument = positionalArguments.get(i);
 
             if (i < rawPositionals.size()) {
-                String rawValue = rawPositionals.get(i);
-                parsedValues.put(argument.getName(), parseSingleArgument(argument, rawValue));
+                parsedValues.put(argument.getName(), parseSingleArgument(argument, rawPositionals.get(i)));
             } else if (argument.hasDefaultValue()) {
                 parsedValues.put(argument.getName(), argument.getDefaultValue());
             } else if (argument.isRequired()) {
@@ -113,13 +101,13 @@ public final class Command {
             }
         }
 
-        Map<String, ProvidedNamedValue> providedByCanonicalName = collectNamedValues(rawNamed);
+        Map<String, ProvidedNamedValue> provided = collectNamedValues(rawNamed);
 
         for (CommandArgument<?> argument : namedArguments) {
-            ProvidedNamedValue provided = providedByCanonicalName.get(argument.getName());
+            ProvidedNamedValue namedValue = provided.get(argument.getName());
 
-            if (provided != null) {
-                if (provided.value() == null) {
+            if (namedValue != null) {
+                if (namedValue.value() == null) {
                     if (argument.hasImplicitValue()) {
                         parsedValues.put(argument.getName(), argument.getImplicitValue());
                     } else {
@@ -129,7 +117,7 @@ public final class Command {
                         );
                     }
                 } else {
-                    parsedValues.put(argument.getName(), parseSingleArgument(argument, provided.value()));
+                    parsedValues.put(argument.getName(), parseSingleArgument(argument, namedValue.value()));
                 }
             } else if (argument.hasDefaultValue()) {
                 parsedValues.put(argument.getName(), argument.getDefaultValue());
@@ -192,7 +180,7 @@ public final class Command {
                 );
             }
 
-            provided.put(argument.getName(), new ProvidedNamedValue(entry.getKey(), entry.getValue()));
+            provided.put(argument.getName(), new ProvidedNamedValue(entry.getValue()));
         }
 
         return provided;
@@ -254,6 +242,5 @@ public final class Command {
         return normalized;
     }
 
-    private record ProvidedNamedValue(String originalName, String value) { }
-
+    private record ProvidedNamedValue(String value) { }
 }

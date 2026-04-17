@@ -41,17 +41,9 @@ public final class CommandArgument<T> {
         this.kind = Objects.requireNonNull(kind, "kind");
         this.parser = Objects.requireNonNull(parser, "parser");
 
-        if (this.name.isBlank()) {
-            throw new IllegalArgumentException("Argument name cannot be blank.");
-        }
-
         List<String> normalizedAliases = new ArrayList<>();
         for (String alias : aliases) {
-            String normalized = normalizeName(Objects.requireNonNull(alias, "alias"));
-            if (normalized.isBlank()) {
-                throw new IllegalArgumentException("Alias cannot be blank.");
-            }
-            normalizedAliases.add(normalized);
+            normalizedAliases.add(normalizeName(Objects.requireNonNull(alias, "alias")));
         }
 
         this.aliases = Collections.unmodifiableList(normalizedAliases);
@@ -203,5 +195,4 @@ public final class CommandArgument<T> {
         }
         return normalized;
     }
-
 }

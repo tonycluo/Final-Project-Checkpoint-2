@@ -34,8 +34,8 @@ public final class CommandResult {
 
     public <T> T get(String name, Class<T> type) {
         Objects.requireNonNull(type, "type");
-
         Object value = get(name);
+
         if (!type.isInstance(value)) {
             throw new IllegalStateException(
                     "Argument '" + name + "' is of type " +
@@ -43,6 +43,7 @@ public final class CommandResult {
                             ", not " + type.getSimpleName() + "."
             );
         }
+
         return type.cast(value);
     }
 
@@ -65,13 +66,4 @@ public final class CommandResult {
     public Map<String, Object> asMap() {
         return values;
     }
-
-    @Override
-    public String toString() {
-        return "CommandResult{" +
-                "commandName='" + commandName + '\'' +
-                ", values=" + values +
-                '}';
-    }
-
 }
