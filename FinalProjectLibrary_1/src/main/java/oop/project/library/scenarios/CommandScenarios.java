@@ -89,4 +89,17 @@ public final class CommandScenarios {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
+
+    public static Map<String, Object> showcase(String arguments) throws RuntimeException {
+        Command command = new Command("search")
+                .addPositionalArgument(CommandArgument.positional("term", Arguments.string()))
+                .addNamedArgument(
+                        CommandArgument.named("case-insensitive", Arguments.bool())
+                                .alias("i")
+                                .optional(false)
+                                .implicit(true)
+                );
+
+        return Map.of("usage", command.usage());
+    }
 }
