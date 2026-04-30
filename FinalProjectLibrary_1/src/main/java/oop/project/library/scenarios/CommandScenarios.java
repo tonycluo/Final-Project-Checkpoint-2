@@ -18,7 +18,12 @@ public final class CommandScenarios {
                 .addPositionalArgument(CommandArgument.positional("left", Arguments.integer()))
                 .addPositionalArgument(CommandArgument.positional("right", Arguments.integer()));
 
-        return parse(command, basic).asMap();
+        CommandResult result = parse(command, basic);
+
+        int left = result.getInt("left");
+        int right = result.getInt("right");
+
+        return Map.of("left", left, "right", right);
     }
 
     public static Map<String, Object> div(String arguments) throws RuntimeException {
@@ -28,7 +33,12 @@ public final class CommandScenarios {
                 .addNamedArgument(CommandArgument.named("left", Arguments.doub()))
                 .addNamedArgument(CommandArgument.named("right", Arguments.doub()));
 
-        return parse(command, basic).asMap();
+        CommandResult result = parse(command, basic);
+
+        double left = result.getDouble("left");
+        double right = result.getDouble("right");
+
+        return Map.of("left", left, "right", right);
     }
 
     public static Map<String, Object> echo(String arguments) throws RuntimeException {
@@ -40,7 +50,11 @@ public final class CommandScenarios {
                                 .optional("echo,echo,echo...")
                 );
 
-        return parse(command, basic).asMap();
+        CommandResult result = parse(command, basic);
+
+        String message = result.getString("message");
+
+        return Map.of("message", message);
     }
 
     public static Map<String, Object> search(String arguments) throws RuntimeException {
@@ -55,7 +69,15 @@ public final class CommandScenarios {
                                 .implicit(true)
                 );
 
-        return parse(command, basic).asMap();
+        CommandResult result = parse(command, basic);
+
+        String term = result.getString("term");
+        boolean caseInsensitive = result.getBoolean("case-insensitive");
+
+        return Map.of(
+                "term", term,
+                "case-insensitive", caseInsensitive
+        );
     }
 
     public static Map<String, Object> dispatch(String arguments) throws RuntimeException {
@@ -71,7 +93,34 @@ public final class CommandScenarios {
                 .addSubcommand("static", staticCommand)
                 .addSubcommand("dynamic", dynamicCommand);
 
-        return parse(command, basic).asMap();
+        CommandResult result = parse(command, basic);
+
+        String type = result.getString("type");
+
+        if (type.equals("static")) {
+            int value = result.getInt("value");
+            return Map.of("type", type, "value", value);
+        }
+
+        if (type.equals("dynamic")) {
+            String value = result.getString("value");
+            return Map.of("type", type, "value", value);
+        }
+
+        throw new RuntimeException("Unknown dispatch type: " + type);
+    }
+
+    public static Map<String, Object> showcase(String arguments) throws RuntimeException {
+        Command command = new Command("search")
+                .addPositionalArgument(CommandArgument.positional("term", Arguments.string()))
+                .addNamedArgument(
+                        CommandArgument.named("case-insensitive", Arguments.bool())
+                                .alias("i")
+                                .optional(false)
+                                .implicit(true)
+                );
+
+        return Map.of("usage", command.usage());
     }
 
     private static BasicArgs parseInput(String arguments) {
@@ -88,18 +137,5 @@ public final class CommandScenarios {
         } catch (RuntimeException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
-    }
-
-    public static Map<String, Object> showcase(String arguments) throws RuntimeException {
-        Command command = new Command("search")
-                .addPositionalArgument(CommandArgument.positional("term", Arguments.string()))
-                .addNamedArgument(
-                        CommandArgument.named("case-insensitive", Arguments.bool())
-                                .alias("i")
-                                .optional(false)
-                                .implicit(true)
-                );
-
-        return Map.of("usage", command.usage());
     }
 }
