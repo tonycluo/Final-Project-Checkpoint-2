@@ -30,6 +30,15 @@ public final class Command {
         return name;
     }
 
+    /**
+     * Adds a positional argument to this command.
+     *
+     * Positional arguments are parsed according to their order in the input.
+     *
+     * @param argument the positional command argument to add
+     * @return this command for chaining
+     * @throws IllegalArgumentException if the argument is not positional or conflicts with an existing argument name/alias
+     */
     public Command addPositionalArgument(CommandArgument<?> argument) {
         Objects.requireNonNull(argument, "argument");
         if (!argument.isPositional()) {
@@ -41,6 +50,16 @@ public final class Command {
         return this;
     }
 
+
+    /**
+     * Adds a named argument to this command.
+     *
+     * Named arguments are parsed using flag-style names such as --left or -i.
+     *
+     * @param argument the named command argument to add
+     * @return this command for chaining
+     * @throws IllegalArgumentException if the argument is not named or conflicts with an existing argument name/alias
+     */
     public Command addNamedArgument(CommandArgument<?> argument) {
         Objects.requireNonNull(argument, "argument");
         if (!argument.isNamed()) {
@@ -240,6 +259,50 @@ public final class Command {
             normalized = normalized.substring(1);
         }
         return normalized;
+    }
+
+    /**
+     * Returns a human-readable usage string for this command.
+     *
+     * This is a feature showcase beyond the assignment requirements. It allows the
+     * command structure to describe itself without manually writing usage text.
+     *
+     * @return a usage string describing positional, named, optional, and alias arguments
+     */
+    public String usage() {
+        StringBuilder builder = new StringBuilder(name);
+
+        for (CommandArgument<?> argument : positionalArguments) {
+            if (argument.hasDefaultValue()) {
+                builder.append(" [<").append(argument.getName()).append(">]");
+            } else {
+                builder.append(" <").append(argument.getName()).append(">");
+            }
+        }
+
+        for (CommandArgument<?> argument : namedArguments) {
+            builder.append(" ");
+
+            if (argument.hasDefaultValue()) {
+                builder.append("[");
+            }
+
+            builder.append("--").append(argument.getName());
+
+            for (String alias : argument.getAliases()) {
+                builder.append("|-").append(alias);
+            }
+
+            if (!argument.hasImplicitValue()) {
+                builder.append(" <value>");
+            }
+
+            if (argument.hasDefaultValue()) {
+                builder.append("]");
+            }
+        }
+
+        return builder.toString();
     }
 
     private record ProvidedNamedValue(String value) { }

@@ -32,6 +32,19 @@ public final class CommandResult {
         return values.get(name);
     }
 
+    /**
+     * Retrieves a parsed argument by name and verifies its expected type.
+     *
+     * This is the main typed extraction method used by scenarios after parsing.
+     * Incorrect usage results in clear errors from the library rather than unsafe casts.
+     *
+     * @param name the parsed argument name
+     * @param type the expected Java type
+     * @return the parsed value as the requested type
+     * @param <T> the expected value type
+     * @throws IllegalArgumentException if no parsed argument exists with the given name
+     * @throws IllegalStateException if the parsed value does not match the expected type
+     */
     public <T> T get(String name, Class<T> type) {
         Objects.requireNonNull(type, "type");
         Object value = get(name);
