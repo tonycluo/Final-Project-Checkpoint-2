@@ -14,10 +14,10 @@ This separation ensures a clear division of responsibilities and allows each sys
 ---
 
 ## Project Structure
-src/main/java/oop/project/library/
-argument/ # Argument parsing system
-command/ # Command parsing system
-scenarios/ # Example scenarios demonstrating usage
+- src/main/java/oop/project/library/
+- argument/ # Argument parsing system
+- command/ # Command parsing system
+- scenarios/ # Example scenarios demonstrating usage
 
 ---
 
