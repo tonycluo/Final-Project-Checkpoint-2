@@ -15,9 +15,9 @@ This separation ensures a clear division of responsibilities and allows each sys
 
 ## Project Structure
 src/main/java/oop/project/library/
-├── argument/ # Argument parsing system
-├── command/ # Command parsing system
-├── scenarios/ # Example scenarios demonstrating usage
+argument/ # Argument parsing system
+command/ # Command parsing system
+scenarios/ # Example scenarios demonstrating usage
 
 ---
 
@@ -44,7 +44,7 @@ boolean flag = result.getBoolean("case-insensitive");
 
 ## Features
 
-# Argument System
+## Argument System
 - Polymorphic abstraction using Argument<T>
 - No hardcoded types in the core abstraction
 - Supports:
@@ -57,7 +57,7 @@ boolean flag = result.getBoolean("case-insensitive");
 - Supports custom validation logic without requiring specialized classes
 - Does not depend on argument names, positions, or command structure
 
-# Command System
+## Command System
 - Positional arguments (mul 1 2)
 - Named arguments (--left 1.0)
 - Argument aliases (-i)
