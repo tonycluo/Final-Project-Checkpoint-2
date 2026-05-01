@@ -27,13 +27,13 @@ Commands are defined declaratively using the Command API:
 
 ```java
 Command command = new Command("search")
-    .addPositionalArgument(CommandArgument.positional("term", Arguments.string()))
-    .addNamedArgument(
-        CommandArgument.named("case-insensitive", Arguments.bool())
-            .alias("i")
-            .optional(false)
-            .implicit(true)
-    );
+        .addPositionalArgument(CommandArgument.positional("term", Arguments.string()))
+        .addNamedArgument(
+                CommandArgument.named("case-insensitive", Arguments.bool())
+                        .alias("i")
+                        .optional(false)
+                        .implicit(true)
+        );
 
 CommandResult result = command.parse(input);
 String term = result.getString("term");
@@ -48,10 +48,10 @@ boolean flag = result.getBoolean("case-insensitive");
 - Polymorphic abstraction using Argument<T>
 - No hardcoded types in the core abstraction
 - Supports:
-    integers
-    doubles
-    booleans
-    strings
+  integers
+  doubles
+  booleans
+  strings
 - Validation is attached directly to parsing via .validate(...)
 - Numeric range validation supports both integers and decimals using Comparable
 - Supports custom validation logic without requiring specialized classes
@@ -72,6 +72,19 @@ boolean flag = result.getBoolean("case-insensitive");
 ---
 
 ## Feature Showcase
+argparse4j has no built-in support for restricting a string argument to a set of allowed values. Validation must be done manually after parsing, with no enforcement at the argument definition level.
+This library adds .choices(String...) directly on StringArgument, providing declarative enum-like validation that is case-insensitive and returns the value in lowercase for consistency:
+
+```
+// Define once — validation is part of the argument definition itself
+StringArgument difficulty = Arguments.string().choices("peaceful", "easy", "normal", "hard");
+
+difficulty.parse("EASY");     // returns "easy"
+difficulty.parse("Hard");     // returns "hard"
+difficulty.parse("hardcore"); // throws ArgumentParseException: Expected one of [...], got 'hardcore'
+```
+In argparse4j, the equivalent requires a manual check after namespace.getString("difficulty") with no standardized error message. Here, the error is caught at parse time with a consistent, descriptive message — no extra validation code in the scenario.
+
 A custom feature was implemented to generate command usage strings automatically.
 
 ```
@@ -110,6 +123,6 @@ This feature demonstrates that command definitions can describe themselves witho
 - The Command system relies on the provided Input parser for tokenization
 - Scenarios demonstrate proper usage of the library, including error handling and typed extraction
 - The design prioritizes:
-    modularity
-    extensibility
-    type safety
+  modularity
+  extensibility
+  type safety
