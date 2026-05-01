@@ -4,26 +4,24 @@ Handles parsing a single String input value into typed data.
 
 ## Development Notes
 
-- The Argument system uses a polymorphic `Argument<T>` abstraction with minimal overhead. `Function<String, T>` parser and a `List<Validator<T>>` are the only fields.
-- No specific data types are hardcoded in `Argument<T>` itself, keeping the abstraction type-agnostic.
-- Numeric range validation is handled by `NumericArgument<N extends Comparable<N>>`, which wraps `Argument<N>` and adds `inRange(min, max)`, using `Comparable` which keeps the logic identical for both `Integer` and `Double`.
-- Validation predicates are attached directly to the `Argument<T>` via chained `.validate()` calls rather than implemented as a separate validation layer. This keeps parsing and validation in the same place and follows "parse, don't validate".
-- `enumChoice()` allows string-choice constraints to be defined inline without creating a dedicated class per use case, following the factory method.
-- `.validate(Predicate<T>, String)` appends a custom validator to a new `Argument<T>` instance, following the decorator pattern and keeping the original instance untouched.
-- The library uses a custom checked exception `ArgumentException` is used instead of `RuntimeException`. Scenarios catch `ArgumentException` and re-throw as `RuntimeException`, standardizing errors internally while maintaining that failures originate from the scenario layer.
-- The `Argument` system is not privy to of argument names, positions, flags, or command structure. Its only responsibility is `String -> Parsed Value`. Names, defaults, and structure are entirely the Command system's concern.
+- The Argument system uses a polymorphic `Argument<T>` interface with minimal overhead. Each concrete type (`IntegerArgument`, `DoubleArgument`, `BooleanArgument`, `StringArgument`) has shared fields or superclass coupling.
+- No specific data types are hardcoded in `Argument<T>` itself, keeping the abstraction type-agnostic. Types only appear in their concrete implementations and in the `Arguments` factory.
+- Numeric range validation is supported directly on `IntegerArgument` and `DoubleArgument` via `inRange(min, max)`, which returns a new constrained instance. The same pattern works for both types without duplicating logic.
+- String choice validation is built into `StringArgument` via `.choices(String...)`, supporting case-insensitive matching and returning the value in lowercase. Pattern-based validation is available via `.regex(String)`.
+- The library uses `ArgumentParseException` (extending `RuntimeException`) instead of generic `RuntimeException` for internal errors. This gives callers a specific type to catch at the boundary while remaining unchecked, so it doesn't break existing `catch (RuntimeException)` blocks in the Command system.
+- The `Argument` system has no knowledge of argument names, positions, flags, or command structure. Its only responsibility is `String -> Parsed Value`. Names, defaults, and structure are entirely the Command system's concern.
 
 ## PoC Design Analysis
 
 ### Individual Review (Argument Lead) Tony Luo
 
 Good decisions:
-- `.validate()` in the template class returns a new `Argument<T>` instance with its appended list of validators, following the decorator design pattern. This allows the parser to be used irrespective of constraints/preconditions.
-- The `enumChoice()` helper function uses the factory design pattern to let the user define string-choice constraints in the moment without having to create a specific class like `DifficultyArgument`, for example.
+- `StringArgument.choices()` and `inRange()` on numeric types follow the decorator pattern — each returns a new constrained instance, leaving the base argument reusable. This allows `Arguments.integer()` to be used as-is or extended per scenario without side effects.
+- The `Arguments` factory class lets callers define argument types inline (e.g. `Arguments.string().choices("easy", "normal", "hard")`) without creating a dedicated class per use case, keeping the API minimal for simple cases.
 
 Bad decisions:
-- Storing validators in the `Argument<T>` class has the aforementioned benefits, but it sacrifices the capacity to validate arguments against each other (e.g. checking that `left < right`).
-- `Argument<T>` inherently has no concept of default values, requiring scenarios to run positional count checks before parsing rather than handling the missing-argument case within the abstraction itself.
+- `Argument<T>` has no concept of default values, requiring scenarios to run positional count checks before parsing rather than handling the missing-argument case within the abstraction itself.
+- Validation is per-argument only — there is no way to validate arguments against each other (e.g. checking that `left < right`) within this system.
 
 ### Individual Review (Command Lead) Mohammed Ali
 
