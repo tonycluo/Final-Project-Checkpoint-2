@@ -75,7 +75,7 @@ boolean flag = result.getBoolean("case-insensitive");
 argparse4j has no built-in support for restricting a string argument to a set of allowed values. Validation must be done manually after parsing, with no enforcement at the argument definition level.
 This library adds .choices(String...) directly on StringArgument, providing declarative enum-like validation that is case-insensitive and returns the value in lowercase for consistency:
 
-```
+```java
 // Define once — validation is part of the argument definition itself
 StringArgument difficulty = Arguments.string().choices("peaceful", "easy", "normal", "hard");
 
@@ -87,7 +87,7 @@ In argparse4j, the equivalent requires a manual check after namespace.getString(
 
 A custom feature was implemented to generate command usage strings automatically.
 
-```
+```java
 Command command = new Command("search")
     .addPositionalArgument(CommandArgument.positional("term", Arguments.string()))
     .addNamedArgument(
