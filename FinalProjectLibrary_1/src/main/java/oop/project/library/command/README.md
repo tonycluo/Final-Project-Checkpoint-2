@@ -117,3 +117,47 @@
 - Improve error handling:
     - use custom exception types instead of RuntimeException
 - Reduce duplication between scenarios and command definitions
+
+## Final Design Rubric Reflection
+
+### Argument Parsing
+
+The Argument system is designed as a polymorphic `Argument<T>` abstraction where each argument converts a raw `String` into a typed value. The Argument system does not know command argument names, positions, or flags. This keeps Argument focused on `String -> Parsed Value`.
+
+### Argument Validation
+
+Validation is attached to the Argument abstraction rather than implemented as many separate specialized classes. Numeric range validation can be shared across number-based arguments, and custom validation allows users to define constraints without needing many one-off argument types.
+
+### Command Creation
+
+The Command system separates positional and named arguments explicitly through `addPositionalArgument` and `addNamedArgument`. Command structure is validated eagerly when arguments are added, including duplicate names and aliases.
+
+### Command Parsing and Extraction
+
+Command parsing uses the provided `Input` system to convert raw input into `BasicArgs`. Parsed values are stored in `CommandResult`, which provides typed extraction through methods like `getInt`, `getDouble`, `getBoolean`, and `get(name, type)`.
+
+### Separation of Concerns
+
+Argument is responsible only for parsing a single string value. Command is responsible for surrounding structure such as names, aliases, flags, defaults, optional arguments, and subcommands. Argument does not need to know the name of the argument.
+
+### State Management
+
+Command state is separated by role: positional arguments, named arguments, and subcommands. This makes parsing flow easier to follow. A possible future improvement would be representing command arguments with a single internal structure to reduce invariants between collections.
+
+### Error Handling
+
+The library should use custom exception types such as `CommandParseException` and argument-specific parse exceptions rather than generic `RuntimeException`. Scenarios catch library exceptions and rethrow `RuntimeException` because the provided scenario tests expect scenario-level failures.
+
+### API
+
+The command API is intended to be readable for simple cases while still supporting advanced features:
+
+```java
+new Command("search")
+    .addPositionalArgument(CommandArgument.positional("term", Arguments.string()))
+    .addNamedArgument(
+        CommandArgument.named("case-insensitive", Arguments.bool())
+            .alias("i")
+            .optional(false)
+            .implicit(true)
+    );
